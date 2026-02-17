@@ -44,7 +44,7 @@ sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply YOUR_GITHUB_USERNAME
 
 The `run_once_install-tools.sh` script inside chezmoi automatically installs
 all tools (tmux, nvim, lazygit, Go, Claude Code, delta, JetBrains Mono Nerd Font,
-etc.) on first apply.
+age, gitleaks, pre-commit, etc.) on first apply.
 
 > **After install:** Set your terminal font to **JetBrainsMono Nerd Font** in
 > Terminal.app → Preferences → Profiles → Font, or iTerm2 → Preferences →
@@ -80,7 +80,7 @@ project-specific layouts. Zero Ruby, zero YAML.
 This repo uses three layers of protection against accidentally leaking secrets:
 
 1. **`.gitignore`** — prevents git from tracking common secret file patterns (`*.pem`, `.env`, `id_rsa*`, etc.)
-2. **`.chezmoiignore`** — prevents `chezmoi add` from pulling sensitive `$HOME` files (SSH keys, GPG keyring, shell history, cloud credentials) into the source state — critical because `autoCommit = true`
+2. **`.chezmoiignore`** — prevents `chezmoi add` from pulling sensitive `$HOME` files (SSH keys, GPG keyring, shell history, cloud credentials, age private key) into the source state — critical because `autoCommit = true`
 3. **`gitleaks` pre-commit hook** — scans staged files for embedded secrets (API keys, tokens) before every commit
 
 ### age Encryption (for secrets that belong in the repo)
@@ -114,7 +114,7 @@ chezmoi apply -v
 
 ### Pre-commit Hook Setup
 
-The gitleaks pre-commit hook is installed automatically by `install.sh`. To manually set it up:
+The gitleaks pre-commit hook is installed automatically by `install.sh` and by the `run_once_install-tools.sh` chezmoi script on new machines. To manually set it up:
 
 ```bash
 pre-commit install          # activate hooks
@@ -206,7 +206,8 @@ your sessions survive reboots without any config files.
 
 ```
 chezmoi-dotfiles/               # → push as GitHub dotfiles repo
-├── .chezmoi.toml.tmpl          # prompts for name/email/github on init
+├── .chezmoi.toml.tmpl          # prompts for name/email/github/age-key on init
+├── .chezmoiignore              # excludes secrets from chezmoi source state
 ├── .chezmoiscripts/
 │   └── run_once_install-tools.sh.tmpl  # installs all tools on first apply
 ├── bin/
