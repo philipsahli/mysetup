@@ -4,6 +4,7 @@
 {{- $email := promptStringOnce . "email" "Your email" -}}
 {{- $github := promptStringOnce . "github_username" "Your GitHub username" -}}
 {{- $personal := promptBoolOnce . "personal" "Is this a personal machine (y/n)" -}}
+{{- $ageRecipient := promptStringOnce . "age_recipient" "Your age public key (from age-keygen)" -}}
 
 [data]
     name = {{ $name | quote }}
@@ -12,7 +13,12 @@
     personal = {{ $personal }}
     os = {{ .chezmoi.os | quote }}
     arch = {{ .chezmoi.arch | quote }}
+    age_recipient = {{ $ageRecipient | quote }}
 
 [git]
     autoCommit = true
     autoPush = false
+
+[age]
+    identity = "~/.config/chezmoi/key.txt"
+    recipient = {{ $ageRecipient | quote }}

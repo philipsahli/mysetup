@@ -161,11 +161,38 @@ else
     fi
 fi
 
-# --- 9. TPM ---
+# --- 10. Secret leakage protection (pre-commit + gitleaks + age) ---
+inst age age
+if command -v gitleaks &>/dev/null; then info "gitleaks ✓"
+else
+    warn "Installing gitleaks..."
+    if [[ "$OS" == "macos" ]]; then brew install gitleaks
+    else
+        GL_VER=$(curl -s "https://api.github.com/repos/gitleaks/gitleaks/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+        curl -Lo /tmp/gitleaks.tar.gz "https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks_${GL_VER}_linux_x64.tar.gz"
+        tar xf /tmp/gitleaks.tar.gz -C /tmp gitleaks && sudo install /tmp/gitleaks /usr/local/bin && rm -f /tmp/gitleaks.tar.gz /tmp/gitleaks
+    fi
+fi
+
+if command -v pre-commit &>/dev/null; then info "pre-commit ✓"
+else
+    warn "Installing pre-commit..."
+    if [[ "$OS" == "macos" ]]; then brew install pre-commit
+    else pip3 install pre-commit
+    fi
+fi
+
+# Activate pre-commit hooks in this repo
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$SCRIPT_DIR/.pre-commit-config.yaml" ]]; then
+    (cd "$SCRIPT_DIR" && pre-commit install) && info "pre-commit hooks ✓"
+fi
+
+# --- 11. TPM ---
 TPM="$HOME/.tmux/plugins/tpm"
 [[ -d "$TPM" ]] && info "TPM ✓" || { warn "Installing TPM..."; git clone https://github.com/tmux-plugins/tpm "$TPM"; }
 
-# --- 10. LazyVim starter ---
+# --- 12. LazyVim starter ---
 NV="$HOME/.config/nvim"
 if [[ -f "$NV/lazyvim.json" ]] || [[ -f "$NV/lua/config/lazy.lua" ]]; then
     info "LazyVim ✓"

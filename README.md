@@ -71,9 +71,56 @@ project-specific layouts. Zero Ruby, zero YAML.
 
 - **Written in Go** — single binary, no runtime deps
 - **Templates** — one config adapts to macOS/Linux (clipboard, paths)
-- **Secrets** — integrates with 1Password, Bitwarden, etc.
+- **Secrets** — encrypts sensitive files with `age` (see below)
 - **run_once scripts** — tool installation happens on `chezmoi apply`
 - **One-liner bootstrap** — new machine → single curl command
+
+## Secret Management
+
+This repo uses three layers of protection against accidentally leaking secrets:
+
+1. **`.gitignore`** — prevents git from tracking common secret file patterns (`*.pem`, `.env`, `id_rsa*`, etc.)
+2. **`.chezmoiignore`** — prevents `chezmoi add` from pulling sensitive `$HOME` files (SSH keys, GPG keyring, shell history, cloud credentials) into the source state — critical because `autoCommit = true`
+3. **`gitleaks` pre-commit hook** — scans staged files for embedded secrets (API keys, tokens) before every commit
+
+### age Encryption (for secrets that belong in the repo)
+
+Some secrets (like `~/.ssh/config`) need to live in the repo so chezmoi can deploy them. These are encrypted with [age](https://github.com/FiloSottile/age) — chezmoi decrypts them on `chezmoi apply`.
+
+**One-time setup:**
+
+```bash
+# Generate your age key (store it safely — losing it = losing access to encrypted secrets)
+age-keygen -o ~/.config/chezmoi/key.txt
+
+# The public key is printed by age-keygen (starts with "age1...")
+# chezmoi will prompt for it on `chezmoi init`
+```
+
+**Adding encrypted files:**
+
+```bash
+# Add a file encrypted (stored with encrypted_ prefix in source state)
+chezmoi add --encrypt ~/.ssh/config
+
+# Verify it's encrypted (should NOT be plaintext)
+cat "$(chezmoi source-path)/encrypted_dot_ssh/config"
+
+# chezmoi apply decrypts automatically
+chezmoi apply -v
+```
+
+**Back up your age key!** Store `~/.config/chezmoi/key.txt` somewhere safe (e.g., macOS Keychain note, printed on paper, USB drive). The key is **not** in this repo — if you lose it, you cannot decrypt your secrets.
+
+### Pre-commit Hook Setup
+
+The gitleaks pre-commit hook is installed automatically by `install.sh`. To manually set it up:
+
+```bash
+pre-commit install          # activate hooks
+pre-commit run --all-files  # test on all existing files
+gitleaks detect --source .  # full repo history scan
+```
 
 ## Editing Configs
 
