@@ -6,6 +6,8 @@
 {{- $personal := promptBoolOnce . "personal" "Is this a personal machine (y/n)" -}}
 {{- $ageRecipient := promptStringOnce . "age_recipient" "Your age public key (from age-keygen)" -}}
 
+encryption = "age"
+
 [data]
     name = {{ $name | quote }}
     email = {{ $email | quote }}
