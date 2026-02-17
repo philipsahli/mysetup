@@ -15,7 +15,7 @@ warn() { echo -e "${YELLOW}[→]${NC} $*"; }
 # {{ if eq .chezmoi.os "darwin" }}
 command -v brew &>/dev/null || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-brew install --quiet tmux neovim lazygit go node ripgrep fd fzf git-delta 2>/dev/null
+brew install --quiet tmux neovim lazygit go node ripgrep fd fzf git-delta age gitleaks pre-commit 2>/dev/null
 brew install --cask font-jetbrains-mono-nerd-font 2>/dev/null || true
 info "Homebrew packages + Nerd Font installed"
 # {{ else if eq .chezmoi.os "linux" }}
@@ -74,6 +74,20 @@ if ! ls "$FONT_DIR"/JetBrainsMono*.ttf &>/dev/null 2>&1; then
     fc-cache -fv "$FONT_DIR" >/dev/null 2>&1
     rm -f /tmp/JetBrainsMono.tar.xz
 fi
+
+# age
+command -v age &>/dev/null || sudo apt-get install -y -qq age
+
+# gitleaks
+if ! command -v gitleaks &>/dev/null; then
+    GL_VER=$(curl -s "https://api.github.com/repos/gitleaks/gitleaks/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+    curl -Lo /tmp/gitleaks.tar.gz "https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks_${GL_VER}_linux_x64.tar.gz"
+    tar xf /tmp/gitleaks.tar.gz -C /tmp gitleaks && sudo install /tmp/gitleaks /usr/local/bin
+    rm -f /tmp/gitleaks.tar.gz /tmp/gitleaks
+fi
+
+# pre-commit
+command -v pre-commit &>/dev/null || pip3 install pre-commit
 # {{ end }}
 
 export PATH="$PATH:/usr/local/go/bin:$HOME/go/bin"
@@ -109,6 +123,12 @@ if [[ ! -f "$NV/lazyvim.json" ]] && [[ ! -f "$NV/lua/config/lazy.lua" ]]; then
     git clone https://github.com/LazyVim/starter "$NV" && rm -rf "$NV/.git"
 fi
 info "LazyVim ready"
+
+# Activate pre-commit hooks (if .pre-commit-config.yaml exists in chezmoi source)
+CHEZMOI_SOURCE="$(chezmoi source-path 2>/dev/null || true)"
+if [[ -n "$CHEZMOI_SOURCE" ]] && [[ -f "$CHEZMOI_SOURCE/../.pre-commit-config.yaml" ]]; then
+    (cd "$CHEZMOI_SOURCE/.." && pre-commit install) && info "pre-commit hooks ✓"
+fi
 
 echo ""
 info "All tools installed! Run 'tmux new -s dev' to start."

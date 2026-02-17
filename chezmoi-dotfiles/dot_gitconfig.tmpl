@@ -1,7 +1,7 @@
 {{- /* chezmoi managed .gitconfig */ -}}
 [user]
-    name = {{ .name }}
-    email = {{ .email }}
+    name = {{ .name | quote }}
+    email = {{ .email | quote }}
 
 [core]
     editor = nvim

@@ -26,6 +26,9 @@
 # Claude credentials
 .claude/credentials*
 
+# age private key
+.config/chezmoi/key.txt
+
 # Caches and local state
 .cache/
 .local/
