@@ -1,0 +1,86 @@
+gui:
+  showIcons: true
+  nerdFontsVersion: "3"
+  showRandomTip: false
+  showCommandLog: false
+  border: "rounded"
+  theme:
+    activeBorderColor:
+      - "#89b4fa"
+      - bold
+    inactiveBorderColor:
+      - "#6c7086"
+    selectedLineBgColor:
+      - "#313244"
+
+git:
+  paging:
+    colorArg: always
+    pager: delta --dark --paging=never
+  autoFetch: true
+  autoRefresh: true
+  branchLogCmd: "git log --graph --color=always --abbrev-commit --decorate --date=relative --pretty=medium {{branchName}} --"
+  allBranchesLogCmd: "git log --graph --all --color=always --abbrev-commit --decorate --date=relative --pretty=medium"
+
+os:
+  editCommand: "nvim"
+  editCommandTemplate: "{{editor}} {{filename}}"
+
+customCommands:
+  # Run Go tests
+  - key: "T"
+    context: "files"
+    command: "go test -v -race ./..."
+    description: "Run all Go tests"
+    subprocess: true
+
+  # Run golangci-lint
+  - key: "L"
+    context: "files"
+    command: "golangci-lint run ./..."
+    description: "Run golangci-lint"
+    subprocess: true
+
+  # Open Claude Code
+  - key: "A"
+    context: "files"
+    command: "claude"
+    description: "Open Claude Code"
+    subprocess: true
+
+  # Conventional commit wizard
+  - key: "<c-f>"
+    context: "files"
+    prompts:
+      - type: "menu"
+        title: "Commit type"
+        options:
+          - name: "feat"
+            value: "feat"
+          - name: "fix"
+            value: "fix"
+          - name: "refactor"
+            value: "refactor"
+          - name: "docs"
+            value: "docs"
+          - name: "chore"
+            value: "chore"
+          - name: "test"
+            value: "test"
+          - name: "ci"
+            value: "ci"
+      - type: "input"
+        title: "Scope (optional)"
+        initialValue: ""
+      - type: "input"
+        title: "Commit message"
+    command: >
+      git commit -m "{{index .PromptResponses 0}}{{if index .PromptResponses 1}}({{index .PromptResponses 1}}){{end}}: {{index .PromptResponses 2}}"
+    description: "Conventional commit"
+    loadingText: "Committing..."
+
+keybinding:
+  universal:
+    quit: "q"
+    return: "<esc>"
+    togglePanel: "<tab>"

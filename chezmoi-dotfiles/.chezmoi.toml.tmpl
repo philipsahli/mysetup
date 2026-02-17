@@ -1,0 +1,18 @@
+{{- /* chezmoi config template — prompts on first init */ -}}
+
+{{- $name := promptStringOnce . "name" "Your full name" -}}
+{{- $email := promptStringOnce . "email" "Your email" -}}
+{{- $github := promptStringOnce . "github_username" "Your GitHub username" -}}
+{{- $personal := promptBoolOnce . "personal" "Is this a personal machine (y/n)" -}}
+
+[data]
+    name = {{ $name | quote }}
+    email = {{ $email | quote }}
+    github_username = {{ $github | quote }}
+    personal = {{ $personal }}
+    os = {{ .chezmoi.os | quote }}
+    arch = {{ .chezmoi.arch | quote }}
+
+[git]
+    autoCommit = true
+    autoPush = false

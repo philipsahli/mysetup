@@ -1,0 +1,42 @@
+{{- /* chezmoi managed .gitconfig */ -}}
+[user]
+    name = {{ .name }}
+    email = {{ .email }}
+
+[core]
+    editor = nvim
+    pager = delta
+
+[init]
+    defaultBranch = main
+
+[pull]
+    rebase = true
+
+[push]
+    autoSetupRemote = true
+
+[merge]
+    conflictstyle = diff3
+
+[diff]
+    colorMoved = default
+
+[interactive]
+    diffFilter = delta --color-only
+
+[delta]
+    navigate = true
+    side-by-side = true
+    line-numbers = true
+    syntax-theme = Catppuccin-mocha
+
+[alias]
+    st = status -sb
+    co = checkout
+    br = branch
+    ci = commit
+    lg = log --graph --oneline --decorate --all
+    amend = commit --amend --no-edit
+    unstage = reset HEAD --
+    last = log -1 HEAD
